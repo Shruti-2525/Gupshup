@@ -17,8 +17,17 @@ export const createMessage = async (messageData) => {
     },
   });
 
-  await dynamoDB.send(command);
-  return { messageId, ...messageData };
+  try {
+    await dynamoDB.send(command);
+    return { 
+      messageId, 
+      ...messageData,
+      createdAt: messageData.createdAt || new Date().toISOString()
+    };
+  } catch (error) {
+    console.error("DynamoDB Error:", error);
+    throw error;
+  }
 };
 
 export const getMessagesByUsers = async (userId1, userId2) => {

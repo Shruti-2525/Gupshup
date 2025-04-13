@@ -70,7 +70,7 @@ const UserSidebar = () => {
       <div className="flex-grow h-full overflow-y-auto px-3 flex flex-col gap-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
         {users?.length > 0 ? (
           users.map((userDetails) => (
-            <User key={userDetails?._id} userDetails={userDetails} />
+            <User key={userDetails?.userId} userDetails={userDetails} />
           ))
         ) : (
           !screenLoading && (!otherUsers || otherUsers.length === 0) && (

@@ -7,7 +7,18 @@ const Message = ({ messageDetails }) => {
     (state) => state.userReducer
   );
   
-  const isCurrentUser = userProfile?._id === messageDetails?.senderId;
+  const isCurrentUser = userProfile?.userId === messageDetails?.senderId;
+
+  // Default avatar based on user type
+  const defaultAvatar = "https://avatar.iran.liara.run/public/boy?username=default";
+
+  // Get appropriate avatar with fallback
+  const getAvatarSrc = () => {
+    if (isCurrentUser) {
+      return userProfile?.avatar || defaultAvatar;
+    }
+    return messageDetails?.senderAvatar || defaultAvatar;
+  };
 
   useEffect(() => {
     if (messageRef.current) {
@@ -16,27 +27,33 @@ const Message = ({ messageDetails }) => {
   }, []);
 
   return (
-    <>
-      <div
-        ref={messageRef}
-        className={`chat ${isCurrentUser ? "chat-end" : "chat-start"}`}
-      >
-        <div className="chat-image avatar">
-          <div className="w-8 rounded-full">
-            <img
-              alt="User Avatar"
-              src={isCurrentUser ? userProfile?.avatar : selectedUser?.avatar}
-            />
-          </div>
-        </div>
-        <div className="chat-bubble bg-gray-700/70 text-white">
-          {messageDetails?.message}
-        </div>
-        <div className="chat-footer opacity-50 text-xs">
-          <time>12:45</time>
+    <div
+      ref={messageRef}
+      className={`chat ${isCurrentUser ? "chat-end" : "chat-start"}`}
+    >
+      <div className="chat-image avatar">
+        <div className="w-8 rounded-full">
+          <img
+            alt={`${isCurrentUser ? 'Your' : 'Sender'}'s avatar`}
+            src={getAvatarSrc()}
+            onError={(e) => {
+              e.target.onerror = null; // Prevent infinite loop
+              e.target.src = defaultAvatar;
+            }}
+          />
         </div>
       </div>
-    </>
+      <div className="chat-bubble bg-gray-700/70 text-white">
+        {messageDetails?.message || ""}
+      </div>
+      <div className="chat-footer opacity-50 text-xs">
+        <time>
+          {messageDetails?.createdAt 
+            ? new Date(messageDetails.createdAt).toLocaleTimeString()
+            : new Date().toLocaleTimeString()}
+        </time>
+      </div>
+    </div>
   );
 };
 

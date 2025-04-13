@@ -6,6 +6,14 @@ import { getSocketId, io } from '../socket/socket.js';
 export const sendMessage = async (req, res, next) => {
   try {
     const { receiverId, message } = req.body;
+    
+    if (!receiverId || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Receiver ID and message are required"
+      });
+    }
+
     const senderId = req.user.userId;
 
     // Create message in database
@@ -13,6 +21,7 @@ export const sendMessage = async (req, res, next) => {
       senderId,
       receiverId,
       message,
+      createdAt: new Date().toISOString()
     });
 
     // Get receiver's socket ID
@@ -20,19 +29,29 @@ export const sendMessage = async (req, res, next) => {
 
     // If receiver is online, emit message
     if (receiverSocketId) {
-      req.app.get("io").to(receiverSocketId).emit("newMessage", {
+      io.to(receiverSocketId).emit("newMessage", {
+        messageId: newMessage.messageId,
         senderId,
+        receiverId,
         message,
         createdAt: newMessage.createdAt,
+        senderAvatar: req.user.avatar
       });
     }
 
     res.status(201).json({
       success: true,
       message: "Message sent successfully",
-      data: newMessage,
+      data: {
+        messageId: newMessage.messageId,
+        senderId,
+        receiverId,
+        message,
+        createdAt: newMessage.createdAt
+      }
     });
   } catch (error) {
+    console.error("Send message error:", error);
     next(error);
   }
 };

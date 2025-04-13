@@ -9,11 +9,11 @@ const SendMessage = () => {
   const [message, setMessage] = useState("");
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !selectedUser?.userId) return;
     
     dispatch(
       sendMessageThunk({
-        recieverId: selectedUser?._id,
+        receiverId: selectedUser?.userId,
         message,
       })
     );
